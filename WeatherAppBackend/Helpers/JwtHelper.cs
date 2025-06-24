@@ -8,17 +8,22 @@ namespace WeatherAppBackend.Helpers;
 public class JwtHelper
 {
     private readonly IConfiguration _config;
+    private readonly ILogger<JwtHelper> _logger;
 
-    public JwtHelper(IConfiguration config)
+    public JwtHelper(IConfiguration config, ILogger<JwtHelper> logger)
     {
         _config = config;
+        _logger = logger;
     }
 
     public string GenerateToken(string email)
     {
         var claims = new[]
         {
-            new Claim(ClaimTypes.Name, email)
+            new Claim(JwtRegisteredClaimNames.Sub, email),
+            new Claim(JwtRegisteredClaimNames.Email, email),
+            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            new Claim(ClaimTypes.Name, email) // Add name claim for User.Identity.Name
         };
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]!));
@@ -31,6 +36,8 @@ public class JwtHelper
             expires: DateTime.UtcNow.AddHours(2),
             signingCredentials: creds);
 
-        return new JwtSecurityTokenHandler().WriteToken(token);
+        var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
+        _logger.LogInformation("Generated JWT for {Email}", email);
+        return tokenString;
     }
 }

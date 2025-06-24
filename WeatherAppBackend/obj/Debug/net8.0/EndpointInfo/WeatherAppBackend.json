@@ -360,13 +360,21 @@
             "type": "string",
             "format": "date-time"
           },
-          "summary": {
+          "name": {
             "type": "string",
             "nullable": true
           },
           "temperature": {
             "type": "number",
             "format": "double"
+          },
+          "summary": {
+            "type": "string",
+            "nullable": true
+          },
+          "icon": {
+            "type": "string",
+            "nullable": true
           },
           "feelsLike": {
             "type": "number",
@@ -376,17 +384,25 @@
             "type": "integer",
             "format": "int32"
           },
-          "icon": {
-            "type": "string",
-            "nullable": true
-          },
-          "name": {
-            "type": "string",
-            "nullable": true
-          },
           "visibility": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "windSpeed": {
             "type": "number",
             "format": "double"
+          },
+          "pressure": {
+            "type": "number",
+            "format": "double"
+          },
+          "sunrise": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "sunset": {
+            "type": "string",
+            "format": "date-time"
           }
         },
         "additionalProperties": false

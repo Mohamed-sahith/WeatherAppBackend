@@ -1,7 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using WeatherAppBackend.Services;
 using WeatherAppBackend.Models.DTOs;
+using WeatherAppBackend.Services;
+//using WeatherAppFrontend.Models.DTOs; // Note: Using Frontend DTO namespace for consistency
 
 namespace WeatherAppBackend.Controllers
 {
@@ -23,10 +24,17 @@ namespace WeatherAppBackend.Controllers
         [Authorize]
         public async Task<ActionResult<List<WeatherForecast>>> GetForecast(string city)
         {
-            var forecast = await _weather.Get5DayForecastAsync(city);
+            if (string.IsNullOrWhiteSpace(city))
+            {
+                return BadRequest(new { message = "City name is required." });
+            }
 
-            if (forecast == null || forecast.Count == 0)
+            var forecast = await _weather.GetForecast(city);
+
+            if (forecast == null || !forecast.Any())
+            {
                 return NotFound(new { message = $"Weather data not found for '{city}'" });
+            }
 
             return Ok(forecast);
         }
