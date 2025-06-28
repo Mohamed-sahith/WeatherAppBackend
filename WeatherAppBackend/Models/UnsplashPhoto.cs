@@ -2,6 +2,18 @@
 
 namespace WeatherAppBackend.Models
 {
+    public class UnsplashSearchResponse
+    {
+        [JsonPropertyName("total")]
+        public int Total { get; set; }
+
+        [JsonPropertyName("total_pages")]
+        public int TotalPages { get; set; }
+
+        [JsonPropertyName("results")]
+        public List<UnsplashPhoto> Results { get; set; }
+    }
+
     public class UnsplashPhoto
     {
         [JsonPropertyName("id")]
@@ -42,11 +54,5 @@ namespace WeatherAppBackend.Models
     {
         [JsonPropertyName("html")]
         public string Html { get; set; }
-    }
-
-    public class UnsplashSearchResponse
-    {
-        [JsonPropertyName("results")]
-        public List<UnsplashPhoto> Results { get; set; }
     }
 }

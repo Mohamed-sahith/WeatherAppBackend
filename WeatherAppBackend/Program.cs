@@ -3,6 +3,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
 using WeatherAppBackend.Helpers;
+using WeatherAppBackend.Models;
 using WeatherAppBackend.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -13,26 +14,30 @@ builder.Configuration
     .AddJsonFile("appsettings.MongoDB.json", optional: true, reloadOnChange: true)
     .AddEnvironmentVariables();
 
-// Validate JWT configuration
+// Validate configurations
 var jwtKey = builder.Configuration["Jwt:Key"];
 var jwtIssuer = builder.Configuration["Jwt:Issuer"];
 var jwtAudience = builder.Configuration["Jwt:Audience"];
-if (string.IsNullOrEmpty(jwtKey) || string.IsNullOrEmpty(jwtIssuer) || string.IsNullOrEmpty(jwtAudience))
+var weatherApiKey = builder.Configuration["WeatherApi:ApiKey"];
+var unsplashAccessKey = builder.Configuration["Unsplash:AccessKey"];
+if (string.IsNullOrEmpty(jwtKey) || string.IsNullOrEmpty(jwtIssuer) || string.IsNullOrEmpty(jwtAudience) ||
+    string.IsNullOrEmpty(weatherApiKey) || string.IsNullOrEmpty(unsplashAccessKey))
 {
-    throw new InvalidOperationException("JWT configuration (Key, Issuer, or Audience) is missing.");
+    throw new InvalidOperationException("Missing required configuration: JWT (Key, Issuer, Audience) or API keys (WeatherApi, Unsplash).");
 }
 
 // Add services
 builder.Services.AddControllers();
 
-// Add CORS policy for frontend
+// Add CORS policy
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowBlazorClient", policy =>
     {
         policy.WithOrigins("https://localhost:7027")
               .AllowAnyHeader()
-              .AllowAnyMethod();
+              .AllowAnyMethod()
+              .AllowCredentials(); // Added to handle preflight requests
     });
 });
 
@@ -55,7 +60,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         {
             OnAuthenticationFailed = context =>
             {
-                Console.WriteLine($"JWT Authentication failed: {context.Exception.Message}");
+                builder.Services.BuildServiceProvider().GetService<ILogger<Program>>()?.LogError("JWT Authentication failed: {Message}", context.Exception.Message);
                 return Task.CompletedTask;
             }
         };
@@ -66,12 +71,18 @@ builder.Services.AddAuthorization();
 // Register application services
 builder.Services.AddScoped<JwtHelper>();
 builder.Services.AddSingleton<UserService>();
-builder.Services.AddSingleton<UserDataService>();
-builder.Services.AddSingleton<WeatherService>();
+builder.Services.AddScoped<UserDataService>();
+builder.Services.AddScoped<WeatherService>();
 builder.Services.AddSingleton<FavouriteCityService>();
-builder.Services.AddSingleton<UnsplashService>();
+builder.Services.AddScoped<UnsplashService>();
 
-// Add HttpClientFactory for UnsplashService
+builder.Services.AddLogging(logging =>
+{
+    logging.AddConsole();
+    logging.SetMinimumLevel(LogLevel.Information);
+});
+
+// Add HttpClientFactory
 builder.Services.AddHttpClient();
 
 // Swagger config
@@ -113,7 +124,7 @@ builder.Services.AddSwaggerGen(c =>
 
 var app = builder.Build();
 
-// Configure middleware
+// Configure middleware and initialize indexes
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -122,11 +133,16 @@ if (app.Environment.IsDevelopment())
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "Weather API v1");
         c.EnablePersistAuthorization();
     });
+
+    using (var scope = app.Services.CreateScope())
+    {
+        var userDataService = scope.ServiceProvider.GetRequiredService<UserDataService>();
+        var user = new User();
+        user.EnsureIndexes(userDataService.UsersCollection); // Access via reflection or make _users accessible
+    }
 }
 
-// Enable CORS before auth & controllers
 app.UseCors("AllowBlazorClient");
-
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();

@@ -91,7 +91,7 @@
   },
   {
     "ContainingType": "WeatherAppBackend.Controllers.UserDataController",
-    "Method": "AddCity",
+    "Method": "AddFavoriteCity",
     "RelativePath": "api/UserData/add-city",
     "HttpMethod": "POST",
     "IsController": true,
@@ -107,17 +107,27 @@
   },
   {
     "ContainingType": "WeatherAppBackend.Controllers.UserDataController",
-    "Method": "GetCities",
+    "Method": "GetFavoriteCities",
     "RelativePath": "api/UserData/cities",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
     "Parameters": [],
-    "ReturnTypes": []
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.List\u00601[[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
   },
   {
     "ContainingType": "WeatherAppBackend.Controllers.UserDataController",
-    "Method": "RemoveCity",
+    "Method": "RemoveFavoriteCity",
     "RelativePath": "api/UserData/remove-city",
     "HttpMethod": "DELETE",
     "IsController": true,
@@ -145,7 +155,17 @@
         "IsRequired": true
       }
     ],
-    "ReturnTypes": []
+    "ReturnTypes": [
+      {
+        "Type": "WeatherAppBackend.Models.DTOs.CityImageResponse",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
   },
   {
     "ContainingType": "WeatherAppBackend.Controllers.WeatherController",
@@ -163,7 +183,7 @@
     ],
     "ReturnTypes": [
       {
-        "Type": "System.Collections.Generic.List\u00601[[WeatherAppBackend.Models.DTOs.WeatherForecast, WeatherAppBackend, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "Type": "System.Collections.Generic.List\u00601[[WeatherAppBackend.Controllers.WeatherForecast, WeatherAppBackend, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
         "MediaTypes": [
           "text/plain",
           "application/json",

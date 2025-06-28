@@ -3,41 +3,43 @@ using System.Security.Claims;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
 
-namespace WeatherAppBackend.Helpers;
-
-public class JwtHelper
+namespace WeatherAppBackend.Helpers
 {
-    private readonly IConfiguration _config;
-    private readonly ILogger<JwtHelper> _logger;
-
-    public JwtHelper(IConfiguration config, ILogger<JwtHelper> logger)
+    public class JwtHelper
     {
-        _config = config;
-        _logger = logger;
-    }
+        private readonly IConfiguration _config;
+        private readonly ILogger<JwtHelper> _logger;
 
-    public string GenerateToken(string email)
-    {
-        var claims = new[]
+        public JwtHelper(IConfiguration config, ILogger<JwtHelper> logger)
         {
-            new Claim(JwtRegisteredClaimNames.Sub, email),
-            new Claim(JwtRegisteredClaimNames.Email, email),
-            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            new Claim(ClaimTypes.Name, email) // Add name claim for User.Identity.Name
-        };
+            _config = config;
+            _logger = logger;
+        }
 
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]!));
-        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+        public string GenerateToken(string email)
+        {
+            var claims = new[]
+            {
+                new Claim(JwtRegisteredClaimNames.Sub, email),
+                new Claim(JwtRegisteredClaimNames.Email, email),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                new Claim(ClaimTypes.Name, email)
+            };
 
-        var token = new JwtSecurityToken(
-            issuer: _config["Jwt:Issuer"],
-            audience: _config["Jwt:Audience"],
-            claims: claims,
-            expires: DateTime.UtcNow.AddHours(2),
-            signingCredentials: creds);
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]!));
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-        var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
-        _logger.LogInformation("Generated JWT for {Email}", email);
-        return tokenString;
+            var expires = DateTime.UtcNow.AddDays(1); // Extend to 24 hours for testing
+            var token = new JwtSecurityToken(
+                issuer: _config["Jwt:Issuer"],
+                audience: _config["Jwt:Audience"],
+                claims: claims,
+                expires: expires,
+                signingCredentials: creds);
+
+            var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
+            _logger.LogInformation("Generated JWT for {Email} with expiration {Expires}", email, expires);
+            return tokenString;
+        }
     }
 }

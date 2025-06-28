@@ -1,8 +1,10 @@
 ﻿using Microsoft.Extensions.Configuration;
+using System;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
 using WeatherAppBackend.Models;
+using WeatherAppBackend.Models.DTOs;
 
 namespace WeatherAppBackend.Services
 {
@@ -19,7 +21,7 @@ namespace WeatherAppBackend.Services
             _baseUrl = configuration["Unsplash:BaseUrl"]?.TrimEnd('/') ?? "https://api.unsplash.com";
         }
 
-        public async Task<UnsplashPhoto> GetCityImageAsync(string city)
+        public async Task<CityImageResponse> GetCityImageAsync(string city)
         {
             if (string.IsNullOrWhiteSpace(city))
             {
@@ -39,7 +41,20 @@ namespace WeatherAppBackend.Services
                         PropertyNameCaseInsensitive = true
                     });
 
-                    return searchResponse?.Results?.FirstOrDefault();
+                    var photo = searchResponse?.Results?.FirstOrDefault();
+                    if (photo == null)
+                    {
+                        Console.WriteLine($"UnsplashService: No image found for {city}.");
+                        return null;
+                    }
+
+                    return new CityImageResponse
+                    {
+                        ImageUrl = photo.Urls?.Regular ?? string.Empty,
+                        AltDescription = photo.AltDescription ?? $"Image of {city}",
+                        Photographer = photo.User?.Name ?? "Unknown",
+                        PhotographerLink = photo.User?.Links?.Html ?? string.Empty
+                    };
                 }
                 else if (response.StatusCode == System.Net.HttpStatusCode.Forbidden)
                 {
@@ -47,13 +62,13 @@ namespace WeatherAppBackend.Services
                 }
                 else
                 {
+                    Console.WriteLine($"UnsplashService: API error for {city}: {response.StatusCode} - {await response.Content.ReadAsStringAsync()}");
                     return null;
                 }
             }
             catch (Exception ex)
             {
-                // Log exception (e.g., using ILogger if injected)
-                Console.WriteLine($"Error fetching image: {ex.Message}");
+                Console.WriteLine($"UnsplashService: Error fetching image for {city}: {ex.Message}");
                 return null;
             }
         }

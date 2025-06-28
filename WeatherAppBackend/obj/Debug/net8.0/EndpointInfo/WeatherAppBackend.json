@@ -195,6 +195,44 @@
         }
       }
     },
+    "/api/UserData/cities": {
+      "get": {
+        "tags": [
+          "UserData"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/UserData/remove-city": {
       "delete": {
         "tags": [
@@ -219,18 +257,6 @@
             }
           }
         },
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
-    "/api/UserData/cities": {
-      "get": {
-        "tags": [
-          "UserData"
-        ],
         "responses": {
           "200": {
             "description": "OK"
@@ -303,7 +329,24 @@
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/CityImageResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CityImageResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CityImageResponse"
+                }
+              }
+            }
           }
         }
       }
@@ -311,6 +354,28 @@
   },
   "components": {
     "schemas": {
+      "CityImageResponse": {
+        "type": "object",
+        "properties": {
+          "imageUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "altDescription": {
+            "type": "string",
+            "nullable": true
+          },
+          "photographer": {
+            "type": "string",
+            "nullable": true
+          },
+          "photographerLink": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "FavouriteCityRequest": {
         "type": "object",
         "properties": {
@@ -360,21 +425,9 @@
             "type": "string",
             "format": "date-time"
           },
-          "name": {
-            "type": "string",
-            "nullable": true
-          },
           "temperature": {
             "type": "number",
             "format": "double"
-          },
-          "summary": {
-            "type": "string",
-            "nullable": true
-          },
-          "icon": {
-            "type": "string",
-            "nullable": true
           },
           "feelsLike": {
             "type": "number",
@@ -384,7 +437,7 @@
             "type": "integer",
             "format": "int32"
           },
-          "visibility": {
+          "pressure": {
             "type": "integer",
             "format": "int32"
           },
@@ -392,9 +445,21 @@
             "type": "number",
             "format": "double"
           },
-          "pressure": {
-            "type": "number",
-            "format": "double"
+          "visibility": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "summary": {
+            "type": "string",
+            "nullable": true
+          },
+          "icon": {
+            "type": "string",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
           },
           "sunrise": {
             "type": "string",
