@@ -17,37 +17,38 @@ namespace WeatherAppBackend.Controllers
         private readonly IConfiguration _configuration;
         private readonly WeatherService _weatherService;
         private readonly UnsplashService _unsplashService;
+        private readonly GeoCityService _geoCityService;
 
-        public WeatherController(IHttpClientFactory httpClientFactory, IConfiguration configuration, WeatherService weatherService, UnsplashService unsplashService)
+        // ✅ Single unified constructor
+        public WeatherController(
+            IHttpClientFactory httpClientFactory,
+            IConfiguration configuration,
+            WeatherService weatherService,
+            UnsplashService unsplashService,
+            GeoCityService geoCityService)
         {
             _httpClient = httpClientFactory.CreateClient();
             _configuration = configuration;
             _weatherService = weatherService;
             _unsplashService = unsplashService;
+            _geoCityService = geoCityService;
         }
 
         [HttpGet("forecast/{city}")]
         public async Task<ActionResult<List<WeatherForecast>>> GetForecast(string city)
         {
             if (string.IsNullOrWhiteSpace(city))
-            {
-                Console.WriteLine("GetForecast: City name is null or empty.");
                 return BadRequest("City name cannot be empty.");
-            }
 
             try
             {
                 var forecasts = await _weatherService.GetForecast(city);
                 if (forecasts == null || !forecasts.Any())
-                {
-                    Console.WriteLine($"GetForecast: No forecast data for {city}.");
                     return NotFound("No forecast data available.");
-                }
                 return Ok(forecasts);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                Console.WriteLine($"GetForecast: Error fetching forecast for {city}: {ex.Message}");
                 return StatusCode(500, "Error fetching weather data.");
             }
         }
@@ -56,28 +57,30 @@ namespace WeatherAppBackend.Controllers
         public async Task<ActionResult<CityImageResponse>> GetCityImage(string city)
         {
             if (string.IsNullOrWhiteSpace(city))
-            {
-                Console.WriteLine("GetCityImage: City name is null or empty.");
                 return BadRequest("City name cannot be empty.");
-            }
 
             try
             {
                 var cityImage = await _unsplashService.GetCityImageAsync(city);
                 if (cityImage == null)
-                {
-                    Console.WriteLine($"GetCityImage: No image found for {city}.");
                     return NotFound("No image found for the city.");
-                }
                 return Ok(cityImage);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                Console.WriteLine($"GetCityImage: Error fetching image for {city}: {ex.Message}");
                 return StatusCode(500, "Error fetching city image.");
             }
         }
+
+        [HttpGet("search-cities")]
+        public async Task<IActionResult> SearchCities([FromQuery] string q)
+        {
+            if (string.IsNullOrWhiteSpace(q)) return BadRequest("Query required.");
+            var results = await _geoCityService.SearchCitiesAsync(q);
+            return Ok(results);
+        }
     }
+
 
     // Updated WeatherForecast model to include Sunset
     public class WeatherForecast

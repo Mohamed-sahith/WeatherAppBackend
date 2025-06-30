@@ -75,6 +75,7 @@ builder.Services.AddScoped<UserDataService>();
 builder.Services.AddScoped<WeatherService>();
 builder.Services.AddSingleton<FavouriteCityService>();
 builder.Services.AddScoped<UnsplashService>();
+builder.Services.AddHttpClient<GeoCityService>();
 
 builder.Services.AddLogging(logging =>
 {

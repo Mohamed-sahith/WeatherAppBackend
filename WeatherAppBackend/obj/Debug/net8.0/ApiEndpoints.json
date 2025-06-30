@@ -192,5 +192,21 @@
         "StatusCode": 200
       }
     ]
+  },
+  {
+    "ContainingType": "WeatherAppBackend.Controllers.WeatherController",
+    "Method": "SearchCities",
+    "RelativePath": "api/Weather/search-cities",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "q",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
   }
 ]
